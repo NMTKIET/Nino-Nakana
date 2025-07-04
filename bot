@@ -912,7 +912,7 @@ async def delete_ug_data(interaction: discord.Interaction, data_to_delete: str):
             description=f'Đã xảy ra lỗi không mong muốn: {e}',
             color=discord.Color.red()
         )
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @bot.tree.command(name='delete_ug_by_id', description='Delete a Local Storage entry by its unique ID.')
 @app_commands.check(is_owner)
@@ -1052,7 +1052,7 @@ async def hcoin_top(interaction: discord.Interaction):
     await interaction.followup.send(embed=embed)
     logger.info(f"User {interaction.user.display_name} (ID: {interaction.user.id}) viewed Hcoin top list.")
 
-@bot.tree.command(name='sing', description='Display the lyrics of the song "Trình" by HIEUTHUHAI, line by line with a 2.5-second delay.')
+@bot.tree.command(name='sing', description='Display the lyrics of the song "Trình" by HIEUTHUHAI, line by line with a 5-second delay.')
 async def sing(interaction: discord.Interaction):
     await interaction.response.defer()
     lyrics = """
@@ -1176,22 +1176,17 @@ Không phải tiếng của xe bán kem, đó là tiếng dây chuyền anh đon
 """
     # Split lyrics into individual lines and filter out empty lines
     lyric_lines = [line.strip() for line in lyrics.split('\n') if line.strip()]
-    logger.info(f"User {interaction.user.display_name} (ID: {interaction.user.id}) used /sing to display {len(lyric_lines)} lines of Trình by HIEUTHUHAI with 2.5s delay per line/chunk.")
+    logger.info(f"User {interaction.user.display_name} (ID: {interaction.user.id}) used /sing to display {len(lyric_lines)} lines of Trình by HIEUTHUHAI with 5s delay per line/chunk.")
     
     # Send an initial message to confirm the command is running
-    await interaction.followup.send("🎵 Bắt đầu hát Trình - HIEUTHUHAI 🎵\nLời bài hát sẽ được gửi từng dòng, mỗi dòng cách nhau 2.5 giây. Các dòng dài sẽ được chia nhỏ để dễ đọc. Hãy chuẩn bị hát theo nào!")
+    await interaction.followup.send("🎵 Bắt đầu hát Trình - HIEUTHUHAI 🎵\nLời bài hát sẽ được gửi từng dòng, mỗi dòng cách nhau 5 giây. Các dòng dài sẽ được chia nhỏ để dễ đọc. Hãy chuẩn bị hát theo nào!")
     
     # Process each line, splitting if necessary
     total_messages = 0
-    max_messages = 100  # Safety limit to prevent excessive messages
     for line_idx, line in enumerate(lyric_lines):
         # Split long lines into chunks
         chunks = split_long_line(line, max_length=1000)
         for chunk_idx, chunk in enumerate(chunks):
-            if total_messages >= max_messages:
-                await interaction.followup.send("⚠️ Đã đạt giới hạn tin nhắn!\nQuá trình gửi lời bài hát đã dừng để tránh spam. Vui lòng thử lại sau.")
-                logger.warning(f"Stopped /sing for user {interaction.user.id} at {total_messages} messages due to safety limit.")
-                return
             try:
                 # Send as a simple message without fixed title
                 message_content = chunk
@@ -1200,7 +1195,7 @@ Không phải tiếng của xe bán kem, đó là tiếng dây chuyền anh đon
                 await interaction.followup.send(message_content)
                 total_messages += 1
                 logger.debug(f"Sent lyric line {line_idx + 1}/{len(lyric_lines)}, part {chunk_idx + 1}/{len(chunks)} for user {interaction.user.id}: {chunk[:50]}...")
-                await asyncio.sleep(2.5)  # Delay 2.5 seconds between messages
+                await asyncio.sleep(5)  # Delay 5 seconds between messages
             except discord.HTTPException as e:
                 logger.error(f"Failed to send lyric line {line_idx + 1}/{len(lyric_lines)}, part {chunk_idx + 1}/{len(chunks)} for user {interaction.user.id}: {e}")
                 await interaction.followup.send(f"❌ Lỗi gửi lời bài hát!\nĐã xảy ra lỗi khi gửi dòng {line_idx + 1} (phần {chunk_idx + 1}/{len(chunks)}): `{e}`. Quá trình gửi lời bài hát đã dừng.")
@@ -1219,7 +1214,7 @@ async def info(interaction: discord.Interaction):
     - `/getugphone`: Sử dụng coin để nhận Local Storage.
     - `/balance`: Kiểm tra số dư coin của bạn.
     - `/hcoin_top`: Xem bảng xếp hạng Hcoin.
-    - `/sing`: Hiển thị lời bài hát "Trình" của HIEUTHUHAI, từng dòng cách nhau 2.5 giây (dòng dài được chia nhỏ).
+    - `/sing`: Hiển thị lời bài hát "Trình" của HIEUTHUHAI, từng dòng cách nhau 5 giây (dòng dài được chia nhỏ).
     """, inline=False)
     embed.add_field(name="Các lệnh dành cho chủ sở hữu bot", value="""
     - `/addugphone`: Thêm Local Storage thủ công.
